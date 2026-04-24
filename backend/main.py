@@ -478,3 +478,32 @@ def delete_goal(gid: int):
     conn.commit()
     conn.close()
     return {"ok": True}
+
+
+# ── Habit yearly stats ────────────────────────────────────────────────────────
+
+@app.get("/habits/yearly-stats")
+def habits_yearly_stats(year: int):
+    conn = get_db()
+    habits = conn.execute("SELECT id FROM habits").fetchall()
+    result = []
+    DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31]
+    # leap year
+    import calendar
+    if calendar.isleap(year):
+        DAYS_IN_MONTH[1] = 29
+    for m in range(1, 13):
+        prefix = f"{year}-{str(m).padStart if False else str(m).zfill(2)}"
+        prefix = f"{year}-{str(m).zfill(2)}"
+        days = DAYS_IN_MONTH[m - 1]
+        total_possible = len(habits) * days
+        if total_possible == 0:
+            result.append({"month": m, "pct": 0, "done": 0, "total": 0})
+            continue
+        done = conn.execute(
+            "SELECT COUNT(*) FROM habit_logs WHERE date LIKE ?", (f"{prefix}-%",)
+        ).fetchone()[0]
+        pct = round(done / total_possible * 100) if total_possible > 0 else 0
+        result.append({"month": m, "pct": pct, "done": done, "total": total_possible})
+    conn.close()
+    return result

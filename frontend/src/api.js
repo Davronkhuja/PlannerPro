@@ -53,3 +53,5 @@ export const getGoals    = ()          => req('GET',    '/goals')
 export const createGoal  = (name, pct) => req('POST',   '/goals', { name, percentage: pct })
 export const updateGoal  = (id, pct)   => req('PATCH',  `/goals/${id}`, { percentage: pct })
 export const deleteGoal  = (id)        => req('DELETE', `/goals/${id}`)
+
+export const getHabitsYearlyStats = (year) => req('GET', `/habits/yearly-stats?year=${year}`)
